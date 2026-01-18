@@ -1,0 +1,306 @@
+# VidFlow Studio Mode — Product Requirements Document (PRD v1)
+
+## 1) Summary
+
+**VidFlow Studio Mode** is a scene-first, review-first creative IDE for producing **5–20 minute** “Hollywood/indie” short films using an agentic workflow. It generates **story bible → characters → scene scripts → shot lists → animatics → scene renders → stitched final**, with explicit human approvals at each gate. Agents propose changes; humans approve; renders happen only from approved scenes.
+
+**North Star:** a filmmaker can ship a coherent 8–12 minute short in one sitting, with professional structure, continuity, and pacing.
+
+---
+
+## 2) Target Users
+
+### Primary
+
+* Indie filmmakers, creators, film students
+* Small studios / creative teams (2–6 people)
+
+### Secondary
+
+* Agencies producing branded shorts
+* Educators running film workshops
+
+---
+
+## 3) Problems We Solve
+
+1. AI video tools don’t maintain **long-form narrative coherence**
+2. Users need **control and reviewability** (not “one big render”)
+3. Iteration is expensive without **scene-level regeneration**
+4. Collaboration lacks **audit trails, diffs, and approvals**
+
+---
+
+## 4) Product Goals
+
+* **Scene as atomic unit** for creation, review, rerender
+* **Role-based agents** (Writer/Director/DP/Editor/Producer/Showrunner)
+* **Deterministic orchestration** triggered by events
+* **Versioning + diffs + audit logs**
+* **Stitching workflow** only for approved scenes
+
+### Non-Goals (v1)
+
+* Full feature-length films (60–120 min)
+* On-set production scheduling (call sheets, crew mgmt)
+* Photoreal VFX pipelines
+* Marketplace for assets (later)
+
+---
+
+## 5) Core Concepts & Entities
+
+* **Project**: film container (title, logline, runtime target)
+* **Story Bible**: tone, rules, world, themes (spec equivalent)
+* **Character**: voice, arc, appearance constraints
+* **Scene**: goal, beat, cast, runtime budget, status & version
+* **Shot**: camera intent + visual prompt + duration
+* **Agent Proposal**: non-destructive suggestions (diffable)
+* **Scene Review**: explicit approval/revise gate
+* **Render Artifact**: animatic/scene render/final film
+* **Stitch Plan**: ordered scene list + transitions
+
+---
+
+## 6) User Journeys
+
+### A) Create a Short Film (Happy Path)
+
+1. Create Project → choose runtime (5–20) + genre/tone
+2. Generate **Story Bible** + **Characters**
+3. Auto-generate Scene Outline (Acts + scenes)
+4. Open Scene 1 → agents propose improvements
+5. Human reviews Scene 1 → approve
+6. Repeat for all scenes
+7. Create Stitch Plan → final render
+8. Export + share
+
+### B) Iterate a Weak Scene
+
+1. Scene flagged by Editor/Producer
+2. Human requests revision with feedback
+3. Agents rerun (writer → director → dp → editor → producer)
+4. Human approves updated version
+5. Stitch Plan updates automatically
+
+---
+
+## 7) Functional Requirements
+
+### 7.1 Project Setup
+
+* Create/edit project metadata (title, logline, runtime target)
+* Choose style presets (e.g., “no voiceover”, “single location”)
+
+**Acceptance**
+
+* Project created in < 1 minute
+* Runtime target reflected in scene budgets
+
+---
+
+### 7.2 Story Bible Builder
+
+* Generate story bible draft from logline + references
+* Allow manual edits + versioning
+
+**Acceptance**
+
+* Bible includes: themes, world rules, tone, visual style, pacing rules
+* Version history is accessible
+
+---
+
+### 7.3 Character Studio
+
+* Create/generate characters with arcs and constraints
+* Character voice rules used in dialogue generation
+
+**Acceptance**
+
+* Characters can be reused across scenes
+* Voice consistency rules visible during script review
+
+---
+
+### 7.4 Scene Planner (Outline)
+
+* Generate outline: Acts → scenes with titles and goals
+* Scene runtime budget shown per scene
+
+**Acceptance**
+
+* Total estimated runtime within ±20% of target
+* Each scene has narrative goal + emotional beat
+
+---
+
+### 7.5 Scene Review Workspace (Core)
+
+**Layout:**
+
+* Left: Scene context (goal, beat, cast, runtime)
+* Center: Tabs (Script, Storyboard/Shot List, Animatic optional)
+* Right: Agent Proposals (collapsible per role)
+
+**Actions:**
+
+* Approve scene
+* Request revision (with feedback)
+* Manual edit (creates new version)
+* Comment-only
+
+**Acceptance**
+
+* No scene can be stitched unless approved
+* All proposals are diffable and attributed to agent role
+* Approvals are logged
+
+---
+
+### 7.6 Agent System (Role-Based)
+
+Agents:
+
+* Writer, Director, Cinematographer, Editor, Producer, Showrunner
+
+Rules:
+
+* Agents never mutate scenes directly
+* Agents emit proposals with structured diffs
+* Deterministic order per scene
+
+**Acceptance**
+
+* Each agent run results in `AgentProposalCreated` event or explicit skip
+* Producer can block if runtime/constraints violated
+* Showrunner runs after approvals to flag cross-scene issues
+
+---
+
+### 7.7 Rendering Pipeline
+
+* Generate optional **animatic** for a scene
+* Generate **scene render** only for approved scenes
+* Generate final render only from a Stitch Plan
+
+**Acceptance**
+
+* Render artifacts store source versions (sceneId → version)
+* Rerendering a scene does not force rerender of all scenes
+
+---
+
+### 7.8 Stitching & Assembly
+
+* Create stitch plan with ordered approved scenes
+* Add transition notes and music notes
+* Produce final render
+
+**Acceptance**
+
+* Stitch plan rejects unapproved scenes
+* Final runtime projection shown before render
+
+---
+
+## 8) Non-Functional Requirements
+
+### Performance
+
+* Scene open → content visible in < 1s (cached)
+* Agent proposals return progressively (streaming ok)
+
+### Reliability
+
+* Event log append-only
+* Orchestration idempotent (safe replays)
+
+### Security/Privacy
+
+* Project-level access control
+* No cross-project data leakage in prompts
+* Redact PII in logs (if applicable)
+
+### Cost Controls
+
+* Scene-level and project-level budget caps
+* Per-agent cost attribution
+
+---
+
+## 9) Data + Events Requirements
+
+### Events (must-have)
+
+* SceneCreated, SceneUpdated, SceneSubmittedForReview
+* AgentProposalCreated, AgentRunFailed
+* SceneApproved, SceneRevisionRequested
+* SceneRendered, FinalRenderCompleted
+
+**Acceptance**
+
+* System can rebuild scene state from event log (replay)
+* Every approval and render is traceable
+
+---
+
+## 10) MVP Scope (v1)
+
+Must ship:
+
+* Project setup
+* Story bible + characters
+* Scene planner
+* Scene review workspace
+* Agent proposals (writer/director/dp/editor/producer)
+* Approval gating
+* Stitch plan + final render (even if render is placeholder pipeline)
+
+Nice-to-have:
+
+* Animatic
+* Collaboration (multi-user real-time)
+* Asset library
+
+---
+
+## 11) Metrics (Success Criteria)
+
+### Activation
+
+* % of projects reaching ≥3 approved scenes
+
+### Completion
+
+* % exporting a stitched short (5–20 min)
+
+### Quality Proxy
+
+* Avg revisions per approved scene
+* Drop-off at review step (signals UX friction)
+
+### Cost
+
+* Avg cost per completed short
+* Avg agent cost per scene
+
+---
+
+## 12) Risks & Mitigations
+
+1. **Narrative incoherence** → Showrunner + bible constraints + scene goals
+2. **Cost runaway** → per-scene budgets, producer stop, caching
+3. **User overwhelm** → presets, progressive disclosure, templates
+4. **Rendering quality variance** → animatic-first workflows, scene re-renders
+
+---
+
+## 13) Milestones (Suggested)
+
+1. **Week 1–2:** DB + events + orchestration + minimal UI
+2. **Week 3–4:** Scene review workspace + proposals
+3. **Week 5–6:** Stitch plan + render artifacts + export
+4. **Week 7+:** Animatic, collaboration, asset packs
+
+---
