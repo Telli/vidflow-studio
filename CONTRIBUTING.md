@@ -104,7 +104,7 @@ dotnet test VidFlow.Api.Tests
 ### Frontend Tests
 ```bash
 cd Qipixel
-npm test
+npm run test:e2e
 ```
 
 ### Integration Tests
@@ -119,7 +119,7 @@ npm run test:e2e
 ### C#/.NET
 - Follow Microsoft C# coding conventions
 - Use PascalCase for public members
-- Use camelCase for private members
+- Use `_camelCase` for private fields; use PascalCase for private methods
 - Add XML documentation for public APIs
 
 ### TypeScript/React
@@ -176,7 +176,7 @@ We maintain several documentation files:
 - **README.md** - Project overview and quick start
 - **DEVELOPMENT.md** - Detailed development setup
 - **PRD** - Product requirements document
-- **Technical PRD.md** - Technical specifications
+- **Technical PRD for VidFlow.md** - Technical specifications
 
 When adding features, please update relevant documentation.
 
@@ -222,7 +222,7 @@ When adding features, please update relevant documentation.
 ## 📞 Getting Help
 
 1. **Check existing issues** - Your question might be answered
-2. **Read the documentation** - DEVELOPMENT.md, PRD, Technical PRD
+2. **Read the documentation** - DEVELOPMENT.md, PRD, Technical PRD for VidFlow.md
 3. **Join discussions** - GitHub discussions tab
 4. **Create an issue** - For bugs or feature requests
 
